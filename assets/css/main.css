@@ -1,0 +1,1793 @@
+/* ==========================================================================
+   THE CHARTER RECORDS
+   Substrate: Swiss Industrial Print on white. One archetype, committed.
+   Geometry: zero radius everywhere.
+
+   TWO ACCENTS, ONE RULE. This page carries green and red, which is only
+   allowed because the split is semantic and is followed everywhere:
+
+     --pitch  GREEN  the record. Structure, years, active state, primary CTA,
+                     anything that continues.
+     --alert  RED    the rupture. Reserved for the four things that broke:
+                     the 1921 ban on women's football, the 1966 theft, the
+                     2015 arrests, and error states in the interface.
+
+   Red is never used for decoration, never for a link, never for a heading.
+   If a new red appears anywhere outside that list, it is a bug.
+   Dark mode inverts the substrate only. The archetype never changes.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+  /* Substrate, light. White canvas as briefed, with a tinted recess so
+     depth still reads without introducing a grey. */
+  --paper:       #FFFFFF;   /* canvas */
+  --paper-2:     #F1F5F1;   /* recessed compartment, faint green cast */
+  --surface:     #FFFFFF;   /* raised compartment */
+  --ink:         #0F1411;   /* near black, faint green cast */
+  --ink-2:       #47544C;   /* secondary, 8.0:1 on white */
+  --ink-3:       #6B7A71;   /* metadata, 4.6:1 on white */
+  --rule:        rgba(15, 20, 17, 0.14);
+  --rule-hard:   #0F1411;
+  --pitch:       #0B6B3A;   /* GREEN. 6.6:1 on white. The record. */
+  --pitch-ink:   #FFFFFF;   /* label colour on a green fill */
+  --alert:       #C8102E;   /* RED. 6.0:1 on white. The rupture. */
+  --alert-ink:   #FFFFFF;   /* label colour on a red fill */
+  --invert-ink:  #FFFFFF;   /* text sitting on ink or on photography */
+
+  /* Structure */
+  --nav-h: 64px;
+  --wrap: 1440px;
+  --gut: clamp(1.25rem, 4vw, 4.5rem);
+  --sec: clamp(6rem, 12vw, 11rem);   /* macro whitespace between chapters */
+
+  /* Type */
+  --display: "Archivo Black", "Archivo", system-ui, sans-serif;
+  --sans:    "Archivo", system-ui, -apple-system, sans-serif;
+  --mono:    "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Motion. No linear, no ease-in-out. */
+  --ease:  cubic-bezier(0.32, 0.72, 0, 1);
+  --ease2: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Systemic layers only. No arbitrary z-index. */
+  --z-base: 1;
+  --z-sticky: 20;
+  --z-nav: 30;
+  --z-menu: 40;
+  --z-grain: 50;
+  --z-progress: 60;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:      #0A0D0B;
+    --paper-2:    #121712;
+    --surface:    #151A16;
+    --ink:        #E9EFEA;
+    --ink-2:      #A3B0A8;
+    --ink-3:      #86948B;
+    --rule:       rgba(233, 239, 234, 0.18);
+    --rule-hard:  #E9EFEA;
+    --pitch:      #37C46F;   /* GREEN lifted for a dark substrate, 7.4:1 */
+    --pitch-ink:  #06150C;
+    --alert:      #FF5566;   /* RED lifted for a dark substrate, 6.1:1 */
+    --alert-ink:  #1A0508;
+    --invert-ink: #FFFFFF;
+    color-scheme: dark;
+  }
+}
+
+/* Dark substrate blocks.
+
+   The light mode green (#0B6B3A) is tuned for white and only reaches about
+   3:1 against near black, which is muddy and fails AA for anything that is
+   not large display text. Every block that sits on an ink background rebinds
+   the accent tokens to their lifted values, so descendants inherit the right
+   contrast without any of them naming a colour directly. The paired ink
+   tokens flip too, otherwise a fill of lifted green would carry white text. */
+.hero,
+.band,
+.pan,
+.women,
+.slab {
+  --pitch:      #37C46F;   /* 8.5:1 on ink */
+  --pitch-ink:  #06150C;
+  --alert:      #FF5566;   /* 6.1:1 on ink */
+  --alert-ink:  #1A0508;
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET AND BASE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-h) + 1.5rem);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img { display: block; max-width: 100%; height: auto; }
+figure { margin: 0; }
+p { margin: 0 0 1.15em; text-wrap: pretty; }
+p:last-child { margin-bottom: 0; }
+a { color: inherit; }
+button, input { font: inherit; color: inherit; }
+
+:focus-visible {
+  outline: 3px solid var(--pitch);
+  outline-offset: 3px;
+}
+
+::selection { background: var(--pitch); color: var(--pitch-ink); }
+
+.wrap {
+  width: 100%;
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-inline: var(--gut);
+}
+
+.section { padding-block: var(--sec); }
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: var(--z-progress);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.75rem 1.25rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.skip:focus { left: 0; }
+
+/* --------------------------------------------------------------------------
+   3. TYPE SCALE
+   -------------------------------------------------------------------------- */
+.h2 {
+  font-family: var(--display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(2rem, 5.2vw, 4.25rem);
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+  margin: 0 0 2.5rem;
+  max-width: 20ch;
+}
+.h2--invert { color: var(--invert-ink); }
+
+.lede {
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  line-height: 1.55;
+  max-width: 62ch;
+}
+
+.section__note {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: -1.5rem 0 0;
+}
+
+/* Eyebrow budget for this page is three. Hero, Eras, Today. */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--pitch);
+  margin: 0 0 1.25rem;
+}
+.eyebrow--onimage { color: var(--invert-ink); }
+.eyebrow--onimage::before {
+  content: "";
+  display: inline-block;
+  width: 2.5rem;
+  height: 2px;
+  background: var(--pitch);
+  vertical-align: middle;
+  margin-right: 0.75rem;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   4. SYSTEMIC LAYERS
+   -------------------------------------------------------------------------- */
+
+/* Mechanical noise. Fixed, non-interactive, never attached to scrolling content.
+
+   NO mix-blend-mode here, deliberately. A blend mode on a fixed full viewport
+   layer forces the browser to re-composite the entire screen on every scroll
+   frame, which was the single largest cause of scroll jank on this page. A
+   plain low opacity overlay gets the same texture for no per-frame cost. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-grain);
+  pointer-events: none;
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+}
+@media (prefers-color-scheme: dark) {
+  .grain { opacity: 0.1; }
+}
+
+/* Scroll progress. Driven by a scroll timeline, not a scroll event listener. */
+.progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  z-index: var(--z-progress);
+  background: var(--rule);
+  pointer-events: none;
+}
+.progress__bar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--pitch);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+@supports (animation-timeline: scroll()) {
+  .progress__bar {
+    animation: progress-grow linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+@keyframes progress-grow { to { transform: scaleX(1); } }
+
+/* --------------------------------------------------------------------------
+   5. NAVIGATION. One line at desktop, 64px, solid. No translucency.
+   -------------------------------------------------------------------------- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+.nav__inner {
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-inline: var(--gut);
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+.nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  flex: none;
+}
+/* The mark carries both accents, which is the one place they sit together:
+   a green plate struck through by a red band. Green record, red rupture. */
+.nav__mark {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  background: var(--pitch);
+  flex: none;
+}
+.nav__mark::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 100%;
+  height: 4px;
+  background: var(--alert);
+}
+.nav__word {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.9rem, 2vw, 2rem);
+}
+.nav__links a {
+  position: relative;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-2);
+  white-space: nowrap;
+  padding-block: 0.4rem;
+  transition: color 0.35s var(--ease);
+}
+.nav__links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--pitch);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.45s var(--ease);
+}
+.nav__links a:hover { color: var(--ink); }
+.nav__links a:hover::after,
+.nav__links a[aria-current="true"]::after { transform: scaleX(1); }
+.nav__links a[aria-current="true"] { color: var(--ink); }
+
+.burger {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--rule-hard);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+}
+.burger__line {
+  position: absolute;
+  left: 50%;
+  width: 18px;
+  height: 2px;
+  background: var(--ink);
+  transform-origin: 50% 50%;
+  transition: transform 0.5s var(--ease), opacity 0.3s var(--ease);
+}
+.burger__line:nth-child(1) { top: 18px; transform: translateX(-50%); }
+.burger__line:nth-child(2) { top: 24px; transform: translateX(-50%); }
+.burger[aria-expanded="true"] .burger__line:nth-child(1) { transform: translateX(-50%) translateY(3px) rotate(45deg); }
+.burger[aria-expanded="true"] .burger__line:nth-child(2) { transform: translateX(-50%) translateY(-3px) rotate(-45deg); }
+
+.menu {
+  position: fixed;
+  inset: var(--nav-h) 0 0 0;
+  z-index: var(--z-menu);
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  align-content: start;
+}
+.menu[hidden] { display: none; }
+.menu__list { display: grid; }
+.menu__list a {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.75rem, 9vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  padding: 1.1rem var(--gut);
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  transform: translateY(28px);
+}
+.menu.is-open .menu__list a {
+  animation: menu-in 0.6s var(--ease2) forwards;
+  animation-delay: calc(var(--i) * 60ms);
+}
+@keyframes menu-in { to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 900px) {
+  .nav__links { display: none; }
+  .burger { display: block; }
+}
+
+/* --------------------------------------------------------------------------
+   6. BUTTONS. Nested icon capsule. Contrast checked in both modes.
+   -------------------------------------------------------------------------- */
+.btn {
+  --mx: 0px; --my: 0px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: translate3d(var(--mx), var(--my), 0);
+  transition: transform 0.5s var(--ease), background-color 0.4s var(--ease), color 0.4s var(--ease);
+}
+.btn__label { line-height: 1; }
+.btn__icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  transition: transform 0.5s var(--ease);
+}
+
+.btn--primary { background: var(--pitch); color: var(--pitch-ink); }
+.btn--primary .btn__icon { background: rgba(0, 0, 0, 0.22); }
+@media (prefers-color-scheme: dark) {
+  .btn--primary .btn__icon { background: rgba(0, 0, 0, 0.24); }
+}
+.btn--primary:hover .btn__icon { transform: translate3d(3px, 3px, 0) scale(1.06); }
+.btn--primary:active { transform: translate3d(var(--mx), var(--my), 0) scale(0.97); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--rule-hard);
+  padding: 0.65rem 1.25rem;
+}
+.btn--ghost:hover { background: var(--ink); color: var(--paper); }
+.btn--ghost:active { transform: scale(0.97); }
+
+/* --------------------------------------------------------------------------
+   7. MEDIA FRAMES, SKELETONS, ERROR STATE
+   -------------------------------------------------------------------------- */
+
+/* Nested enclosure: outer tray, inner plate. Sharp corners throughout. */
+.frame {
+  border: 1px solid var(--rule-hard);
+  padding: 8px;
+  background: var(--paper-2);
+}
+.frame__core {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper-2);
+}
+/* object-position sits high on purpose. These are photographs of people, and
+   when a cover crop has to lose something it should lose feet, not heads. */
+.frame__core img,
+.bento__cell--media img,
+.stack__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 22%;
+  filter: grayscale(1) contrast(1.08);
+  transition: transform 1.1s var(--ease), filter 0.7s var(--ease);
+}
+/* The two trophy plates are objects, not people, and want centring. */
+.trophy__a .frame__core img,
+.trophy__b .frame__core img { object-position: 50% 50%; }
+.frame:hover .frame__core img,
+.bento__cell--media:hover img,
+.stack__media:hover img { transform: scale(1.045); filter: grayscale(0.55) contrast(1.05); }
+
+figcaption {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  margin-top: 0.75rem;
+  max-width: 46ch;
+}
+
+.skeleton {
+  position: absolute;
+  inset: 0;
+  background: var(--paper-2);
+  overflow: hidden;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--rule), transparent);
+  animation: shimmer 1.4s var(--ease) infinite;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
+.is-loaded .skeleton { display: none; }
+
+/* Offline or blocked image: a labelled compartment, never a broken glyph. */
+.img-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--paper-2);
+  border: 1px dashed var(--rule-hard);
+}
+.img-error b {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--alert);   /* rupture rule: error state */
+}
+.img-error span {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--ink-3);
+  max-width: 34ch;
+}
+
+/* --------------------------------------------------------------------------
+   8. HERO. Full bleed plate, text anchored bottom left.
+   -------------------------------------------------------------------------- */
+.hero {
+  position: relative;
+  min-height: calc(100dvh - var(--nav-h));
+  display: grid;
+  align-items: end;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--ink);
+}
+.hero__media { position: absolute; inset: 0; z-index: -2; }
+.hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.15) brightness(0.72);
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(to top, rgba(8, 8, 8, 0.92) 0%, rgba(8, 8, 8, 0.55) 42%, rgba(8, 8, 8, 0.25) 100%);
+}
+.hero__body {
+  padding: 0 var(--gut) clamp(3rem, 8vh, 6rem);
+  padding-top: 6rem;              /* cap. Hero content never floats mid viewport. */
+  max-width: var(--wrap);
+  margin-inline: auto;
+  width: 100%;
+}
+.hero__title {
+  font-family: var(--display);
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--invert-ink);
+  font-size: clamp(2.25rem, 6.4vw, 6rem);
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  margin: 0 0 1.75rem;
+}
+.hero__lede {
+  color: var(--invert-ink);
+  opacity: 0.86;
+  font-size: clamp(1rem, 1.4vw, 1.1875rem);
+  line-height: 1.5;
+  max-width: 52ch;
+  margin-bottom: 2.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   9. ORIGINS. Asymmetric split, oversized numeral, compartment grid.
+   -------------------------------------------------------------------------- */
+.origins__head { position: relative; }
+.origins__numeral {
+  font-family: var(--display);
+  font-size: clamp(6rem, 22vw, 20rem);
+  line-height: 0.75;
+  letter-spacing: -0.055em;
+  color: var(--pitch);
+  opacity: 0.12;
+  position: absolute;
+  right: 0;
+  top: -0.15em;
+  pointer-events: none;
+  user-select: none;
+}
+.origins__split {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+  padding-top: 1rem;
+}
+.origins__text p { color: var(--ink-2); }
+.origins__text .lede { color: var(--ink); }
+.origins__figure .frame__core { aspect-ratio: 4 / 5; }
+
+/* Razor lines from a 1px grid gap, not from eight separate borders. */
+.founders {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--rule-hard);
+  border: 1px solid var(--rule-hard);
+  margin-top: clamp(3rem, 7vw, 6rem);
+}
+.founders__cell {
+  background: var(--paper);
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+  min-height: 9rem;
+  transition: background-color 0.45s var(--ease);
+}
+.founders__cell:hover { background: var(--paper-2); }
+.founders__cell--alt { background: var(--paper-2); }
+.founders__cell--alt:hover { background: var(--paper); }
+.founders__n {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  color: var(--pitch);
+}
+.founders__name {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.05rem, 1.8vw, 1.6rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.founders__meta {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* --------------------------------------------------------------------------
+   10. CONFEDERATION BAND. The single marquee on this page.
+   -------------------------------------------------------------------------- */
+.band {
+  border-block: 1px solid var(--rule-hard);
+  background: var(--ink);
+  color: var(--paper);
+  overflow: hidden;
+  padding-block: 1rem;
+}
+.band__track { display: flex; width: max-content; animation: marquee 34s linear infinite; }
+.band__set { display: flex; align-items: center; gap: 2.5rem; padding-right: 2.5rem; }
+.band__item {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.band__item b { color: var(--pitch); font-weight: 700; margin-left: 0.4rem; }
+.band__sep { color: var(--pitch); font-family: var(--mono); font-size: 0.75rem; }
+@keyframes marquee { to { transform: translate3d(-50%, 0, 0); } }
+.band:hover .band__track { animation-play-state: paused; }
+@media (prefers-color-scheme: dark) {
+  .band { background: var(--paper-2); color: var(--ink); }
+}
+
+/* --------------------------------------------------------------------------
+   11. PRESIDENTS RAIL. Horizontal snap track.
+   -------------------------------------------------------------------------- */
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(19rem, 22rem);
+  gap: 1px;
+  background: var(--rule-hard);
+  border-block: 1px solid var(--rule-hard);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  padding-inline: 0;
+  overscroll-behavior-x: contain;
+}
+.rail__card {
+  background: var(--paper);
+  scroll-snap-align: start;
+  padding: clamp(1.5rem, 2.5vw, 2.25rem);
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  transition: background-color 0.45s var(--ease);
+}
+.rail__card:hover { background: var(--paper-2); }
+.rail__card--key { background: var(--paper-2); }
+.rail__card--key:hover { background: var(--paper); }
+.rail__card--gap { opacity: 0.72; }
+.rail__years {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pitch);
+  margin: 0;
+}
+.rail__name {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: 0.25rem 0 0;
+}
+.rail__country {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 0.75rem;
+}
+.rail__note { font-size: 0.9375rem; line-height: 1.55; color: var(--ink-2); margin: 0; }
+.rail__card--key .rail__name { color: var(--pitch); }
+
+/* --------------------------------------------------------------------------
+   12. ERAS. Scroll-pinned horizontal pan. CSS timeline, snap fallback.
+   -------------------------------------------------------------------------- */
+.pan {
+  position: relative;
+  background: var(--ink);
+  color: var(--paper);
+  border-block: 1px solid var(--rule-hard);
+}
+@media (prefers-color-scheme: dark) {
+  .pan { background: var(--paper-2); color: var(--ink); }
+}
+.pan__stage { position: relative; }
+.pan__head {
+  padding: clamp(3rem, 6vw, 5rem) var(--gut) 0;
+  max-width: var(--wrap);
+  margin-inline: auto;
+}
+.pan__head .eyebrow { color: var(--pitch); }
+.pan__title {
+  font-family: var(--display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(2rem, 5.2vw, 4.25rem);
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.pan__track {
+  display: flex;
+  gap: 1px;
+  padding: clamp(2.5rem, 5vw, 4rem) var(--gut) clamp(3rem, 6vw, 5rem);
+  will-change: transform;
+}
+.era {
+  flex: 0 0 min(30rem, 82vw);
+  border: 1px solid currentColor;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  display: grid;
+  align-content: start;
+  gap: 0.5rem;
+}
+.era__range {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pitch);
+  margin: 0;
+}
+.era__name {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  margin: 0.25rem 0 0.75rem;
+}
+.era__body { font-size: 0.9375rem; line-height: 1.6; opacity: 0.82; margin: 0 0 1.5rem; }
+.era__stat { margin: 0; padding-top: 1.25rem; border-top: 1px solid currentColor; }
+.era__stat dt {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.era__stat dd {
+  font-family: var(--display);
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 0.25rem 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.era--accent { background: var(--pitch); color: var(--pitch-ink); border-color: var(--pitch); }
+.era--accent .era__range { color: var(--pitch-ink); opacity: 0.85; }
+
+/* rupture rule: the 2015 era is the one that broke, so it takes the red fill */
+.era--alert { background: var(--alert); color: var(--alert-ink); border-color: var(--alert); }
+.era--alert .era__range { color: var(--alert-ink); opacity: 0.85; }
+
+/* Pinned pan, where the browser supports scroll-driven animation. */
+@supports (animation-timeline: view()) {
+  @media (min-width: 901px) and (prefers-reduced-motion: no-preference) {
+    .pan {
+      height: 460vh;
+      view-timeline: --panTL block;
+    }
+    .pan__stage {
+      position: sticky;
+      top: var(--nav-h);
+      height: calc(100dvh - var(--nav-h));
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .pan__track {
+      animation: pan-x linear both;
+      animation-timeline: --panTL;
+      animation-range: contain 0% contain 100%;
+    }
+    /* Track is wider than the viewport, so this value is negative.
+       The track's own right gutter supplies the trailing space. */
+    @keyframes pan-x {
+      to { transform: translate3d(calc(100vw - 100%), 0, 0); }
+    }
+  }
+}
+
+/* Fallback everywhere else: an honest horizontal snap track. */
+.pan__track { overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; }
+.era { scroll-snap-align: center; }
+@supports (animation-timeline: view()) {
+  @media (min-width: 901px) and (prefers-reduced-motion: no-preference) {
+    .pan__track { overflow-x: visible; scroll-snap-type: none; }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13. TROPHY. Layered cascade with a deliberate overlap.
+   -------------------------------------------------------------------------- */
+.trophy__grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: clamp(1.5rem, 3vw, 3rem);
+  align-items: start;
+}
+.trophy__text { grid-column: 1 / span 6; }
+.trophy__text p:not(.lede) { color: var(--ink-2); }
+.trophy__a { grid-column: 7 / span 3; }
+.trophy__b { grid-column: 10 / span 3; margin-top: clamp(3rem, 9vw, 8rem); }
+.trophy__a .frame__core,
+.trophy__b .frame__core { aspect-ratio: 3 / 4; }
+
+/* --------------------------------------------------------------------------
+   14. STICKY STACK. Cards pin at the top and compress as the next arrives.
+   -------------------------------------------------------------------------- */
+.stack { padding-block: var(--sec) 0; }
+.stack__title { margin-bottom: clamp(2rem, 5vw, 4rem); }
+.stack__list { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--gut); }
+/* Each card pins slightly lower than the one before it, so the stack stays
+   visible as an edge cascade rather than a single card replacing another.
+   Pure sticky, no scroll timeline: it behaves identically in every engine. */
+.stack__card {
+  position: sticky;
+  top: calc(var(--nav-h) + 1.5rem + (var(--n) * 14px));
+  padding-bottom: 1.75rem;
+  /* Sticky content sits above normal flow but below the nav. Without this a
+     following section can paint over a pinned card. */
+  z-index: var(--z-sticky);
+}
+.stack__inner {
+  background: var(--paper);
+  border: 1px solid var(--rule-hard);
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 0;
+  align-items: stretch;
+  overflow: hidden;
+}
+.stack__card > .stack__inner > *:not(.stack__media) { padding-inline: clamp(1.5rem, 3vw, 2.75rem); }
+.stack__date {
+  grid-column: 1;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pitch);
+  margin: clamp(1.5rem, 3vw, 2.75rem) 0 0;
+}
+.stack__h {
+  grid-column: 1;
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 3.2vw, 2.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  margin: 0.5rem 0 1rem;
+}
+.stack__p {
+  grid-column: 1;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 0 0 clamp(1.5rem, 3vw, 2.75rem);
+  max-width: 52ch;
+}
+.stack__media {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+  background: var(--paper-2);
+  border-left: 1px solid var(--rule-hard);
+}
+/* rupture rule: the 2015 arrests card takes the red fill.
+   The 1966 theft card takes a red edge only, since the trophy came back. */
+.stack__card--accent .stack__inner { background: var(--alert); border-color: var(--alert); }
+.stack__card--accent .stack__date { color: var(--alert-ink); opacity: 0.85; }
+.stack__card--accent .stack__h,
+.stack__card--accent .stack__p { color: var(--alert-ink); }
+.stack__card--accent .stack__media { border-left-color: rgba(255, 255, 255, 0.28); }
+
+.stack__card--edge .stack__inner { border-left: 4px solid var(--alert); }
+.stack__card--edge .stack__date { color: var(--alert); }
+
+/* The stack deliberately does not use a scroll timeline. A view timeline on a
+   sticky element measures its stuck box, which produces a trigger that fires at
+   the wrong moment. A half working pin is worse than a clean one. */
+
+/* --------------------------------------------------------------------------
+   15. WOMEN'S GAME. Full bleed band, stacked type.
+   -------------------------------------------------------------------------- */
+.women { position: relative; isolation: isolate; background: var(--ink); overflow: hidden; }
+.women__media { position: absolute; inset: 0; z-index: -2; }
+.women__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.12) brightness(0.55);
+}
+.women::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to right, rgba(8, 8, 8, 0.94) 0%, rgba(8, 8, 8, 0.72) 55%, rgba(8, 8, 8, 0.5) 100%);
+}
+.women__body { padding-block: var(--sec); }
+.women__cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1.5rem, 3vw, 3rem);
+  color: var(--invert-ink);
+}
+.women__cols p { font-size: 0.9375rem; line-height: 1.65; opacity: 0.86; margin: 0; }
+.women__cols p::before {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 2px;
+  background: var(--pitch);
+  margin-bottom: 1.25rem;
+}
+/* rupture rule: the 1921 ban is the thing that broke in this section */
+.women__cols p.is-rupture::before { background: var(--alert); width: 4.5rem; }
+
+/* rupture rule: a red left rule marks a passage about something that broke.
+   Used exactly twice on the page, at the theft and at the ban. */
+.rupture {
+  border-left: 3px solid var(--alert);
+  padding-left: 1.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   16. BENTO. Five items, five cells, dense flow, no empty tracks.
+   -------------------------------------------------------------------------- */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-flow: dense;
+  gap: 1px;
+  background: var(--rule-hard);
+  border: 1px solid var(--rule-hard);
+}
+.bento__cell {
+  background: var(--paper);
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+}
+.bento__cell--a { grid-column: span 4; background: var(--pitch); color: var(--pitch-ink); }
+.bento__cell--b { grid-column: span 8; }
+.bento__cell--c { grid-column: span 5; }
+.bento__cell--d { grid-column: span 7; }
+.bento__cell--e { grid-column: span 12; background: var(--paper-2); }
+
+/* align-content must be end here, otherwise the caption renders against the
+   top of the photograph instead of sitting on its bottom edge. */
+.bento__cell--media {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  min-height: 16rem;
+  align-content: end;
+}
+.bento__cell--media img { position: absolute; inset: 0; }
+.bento__cell--media figcaption {
+  position: relative;
+  margin: 0;
+  align-self: end;
+  padding: 1rem clamp(1.25rem, 2vw, 1.75rem);
+  background: var(--paper);
+  border-top: 1px solid var(--rule-hard);
+  max-width: none;
+}
+.bento__cell--c { min-height: 22rem; }
+
+.bento__k {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin: 0;
+}
+.bento__stat {
+  font-family: var(--display);
+  font-size: clamp(3.5rem, 9vw, 7rem);
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.bento__stat--sm { font-size: clamp(2.25rem, 4.5vw, 3.5rem); }
+.bento__sub { font-size: 0.875rem; line-height: 1.55; margin: 0; opacity: 0.85; }
+.bento__sub--wide { max-width: 60ch; margin-top: 1.25rem; }
+.bento__row { display: flex; gap: clamp(2rem, 6vw, 5rem); flex-wrap: wrap; }
+
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.85rem; }
+.checks li {
+  position: relative;
+  padding-left: 1.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.checks li::before {
+  content: "+";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--pitch);
+}
+
+/* ==========================================================================
+   16b. SECOND WAVE LAYOUT FAMILIES
+
+   The page now runs twenty sections. "Every layout family appears once" does
+   not survive that, so the rule in force is the weaker but still meaningful
+   one: no family appears more than twice, and no two adjacent sections share
+   a family. Five primitives below, each used at most twice.
+   ========================================================================== */
+
+/* --- VOTE. Used once, for the IFAB vote share. ---------------------------- */
+.vote__grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+}
+.vote__text p { color: var(--ink-2); }
+.vote__text .lede { color: var(--ink); }
+
+.vote__board { border: 1px solid var(--rule-hard); padding: clamp(1.25rem, 3vw, 2rem); }
+.vote__k {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 1rem;
+}
+.vote__blocks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 1rem; }
+.vote__block {
+  aspect-ratio: 1;
+  border: 2px solid var(--pitch);
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 0.25rem;
+  line-height: 1.2;
+}
+.vote__block--fifa { background: var(--pitch); color: var(--pitch-ink); }
+.vote__legend { font-family: var(--mono); font-size: 0.6875rem; line-height: 1.7; color: var(--ink-2); margin: 0; }
+.vote__legend b { color: var(--ink); }
+
+/* --- LATTICE. Used twice: confederations, other competitions. ------------- */
+.lattice {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule-hard);
+  border: 1px solid var(--rule-hard);
+}
+.lattice__cell {
+  background: var(--paper);
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
+  min-height: 11rem;
+  transition: background-color 0.45s var(--ease);
+}
+.lattice__cell:hover { background: var(--paper-2); }
+.lattice__y {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  color: var(--pitch);
+  margin: 0;
+}
+.lattice__h {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.05rem, 1.9vw, 1.5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.lattice__n {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 0.4rem;
+}
+.lattice__p { font-size: 0.875rem; line-height: 1.55; color: var(--ink-2); margin: 0; }
+
+/* --- LEDGER. Used twice: the Olympic dispute, host selection. ------------- */
+.ledger {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule-hard);
+  border: 1px solid var(--rule-hard);
+}
+.ledger__side { background: var(--paper); padding: clamp(1.5rem, 3vw, 2.5rem); }
+.ledger__side--after { background: var(--paper-2); }
+.ledger__k {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pitch);
+  margin: 0 0 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--rule);
+}
+.ledger__h {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.15rem, 2.2vw, 1.75rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.9rem;
+}
+.ledger__side p { font-size: 0.9375rem; line-height: 1.6; color: var(--ink-2); }
+
+/* --- STEPS. Used twice: technology, the transfer system. ------------------ */
+.steps { display: grid; gap: 0; border-top: 1px solid var(--rule-hard); max-width: 62rem; }
+.steps__row {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  padding: clamp(1.25rem, 2.5vw, 2rem) 0;
+  border-bottom: 1px solid var(--rule);
+  transition: padding-left 0.45s var(--ease), background-color 0.45s var(--ease);
+}
+.steps__row:hover { background: var(--paper-2); padding-left: 1rem; }
+.steps__y {
+  font-family: var(--display);
+  font-size: clamp(1.15rem, 2vw, 1.6rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--pitch);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+.steps__h {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1rem, 1.8vw, 1.3rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.6rem;
+}
+.steps__p { font-size: 0.9375rem; line-height: 1.6; color: var(--ink-2); margin: 0; max-width: 62ch; }
+
+/* --- SLAB. Used twice: rankings, revenue. -------------------------------- */
+.slab { background: var(--ink); color: var(--paper); border-block: 1px solid var(--rule-hard); }
+@media (prefers-color-scheme: dark) {
+  .slab { background: var(--paper-2); color: var(--ink); }
+}
+.slab__inner { padding-block: var(--sec); }
+.slab .h2 { color: inherit; }
+.slab__lede { font-size: clamp(1rem, 1.5vw, 1.1875rem); line-height: 1.55; max-width: 60ch; opacity: 0.86; }
+.slab__figures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: currentColor;
+  border: 1px solid currentColor;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+.slab__fig {
+  background: var(--ink);
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
+}
+@media (prefers-color-scheme: dark) {
+  .slab__fig { background: var(--paper-2); }
+}
+.slab__v {
+  font-family: var(--display);
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  color: var(--pitch);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+.slab__k {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin: 0;
+}
+.slab__p { font-size: 0.875rem; line-height: 1.55; opacity: 0.82; margin: 0.5rem 0 0; }
+
+@media (max-width: 900px) {
+  .vote__grid { grid-template-columns: 1fr; }
+  .lattice { grid-template-columns: repeat(2, 1fr); }
+  .ledger { grid-template-columns: 1fr; }
+  .slab__figures { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .lattice { grid-template-columns: 1fr; }
+  .steps__row { grid-template-columns: 1fr; gap: 0.5rem; }
+}
+
+/* --------------------------------------------------------------------------
+   16d. TIERS. Used once, for FIFA's governance hierarchy. A descending stack
+   where each tier is visibly narrower than the one above it, because that is
+   what the structure actually looks like: 211 members at the top, then 37,
+   then an administration nobody votes for.
+   -------------------------------------------------------------------------- */
+.tiers { display: grid; gap: 1rem; max-width: 62rem; }
+.tier {
+  border: 1px solid var(--rule-hard);
+  background: var(--paper);
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  align-items: start;
+  transition: background-color 0.4s var(--ease);
+}
+.tier:hover { background: var(--paper-2); }
+.tier:nth-child(1) { width: 100%; }
+.tier:nth-child(2) { width: 94%; }
+.tier:nth-child(3) { width: 88%; }
+.tier:nth-child(4) { width: 82%; }
+.tier__count {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--pitch);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+.tier__unit {
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0.35rem 0 0;
+}
+.tier__h {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.05rem, 1.9vw, 1.4rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.6rem;
+}
+.tier__p { font-size: 0.9375rem; line-height: 1.6; color: var(--ink-2); margin: 0; max-width: 62ch; }
+
+@media (max-width: 700px) {
+  .tier,
+  .tier:nth-child(1),
+  .tier:nth-child(2),
+  .tier:nth-child(3),
+  .tier:nth-child(4) { width: 100%; grid-template-columns: 1fr; gap: 0.75rem; }
+}
+
+/* --------------------------------------------------------------------------
+   16c. SCORERS. Used once. Three zones inside one family: a deliberately
+   lopsided podium, a hairline ledger for the rest of the top ten, and a
+   strip of standing records.
+   -------------------------------------------------------------------------- */
+
+/* Zone one: the record holder, given the whole width. */
+.scorers__first {
+  display: grid;
+  grid-template-columns: 15rem 1fr;
+  gap: 0;
+  border: 1px solid var(--rule-hard);
+  background: var(--paper);
+  margin-bottom: 1px;
+}
+.scorers__firstMedia {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper-2);
+  border-right: 1px solid var(--rule-hard);
+  aspect-ratio: 3 / 4;
+  padding: 10px;
+}
+.scorers__firstBody {
+  padding: clamp(1.5rem, 3vw, 2.75rem);
+  display: grid;
+  align-content: center;
+  gap: 0.5rem;
+}
+.scorers__rank {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pitch);
+  margin: 0;
+}
+.scorers__tally {
+  font-family: var(--display);
+  font-size: clamp(4rem, 13vw, 10rem);
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  color: var(--pitch);
+  font-variant-numeric: tabular-nums;
+  margin: 0.25rem 0;
+}
+.scorers__name {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.35rem, 3vw, 2.25rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.scorers__meta {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 0.75rem;
+}
+.scorers__note { font-size: 0.9375rem; line-height: 1.6; color: var(--ink-2); margin: 0; max-width: 58ch; }
+
+/* Zone two: the two who were passed, side by side and visibly smaller. */
+.scorers__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule-hard);
+  border: 1px solid var(--rule-hard);
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+.scorers__second {
+  background: var(--paper);
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+}
+.scorers__secondMedia {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper-2);
+  border-right: 1px solid var(--rule-hard);
+  aspect-ratio: 3 / 4;
+  padding: 8px;
+}
+.scorers__secondBody { padding: clamp(1rem, 2vw, 1.5rem); display: grid; align-content: center; gap: 0.3rem; }
+.scorers__secondBody .scorers__tally { font-size: clamp(2.25rem, 5vw, 3.5rem); }
+.scorers__secondBody .scorers__name { font-size: clamp(1rem, 1.8vw, 1.35rem); }
+
+/* Shared plate treatment. contain, so nothing is cropped off a face. */
+.scorers__firstMedia img,
+.scorers__secondMedia img,
+.scorers__thumb img,
+.scorers__recMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: saturate(0.85) contrast(1.03);
+  transition: transform 0.9s var(--ease), filter 0.5s var(--ease);
+}
+.scorers__first:hover .scorers__firstMedia img,
+.scorers__second:hover .scorers__secondMedia img { transform: scale(1.03); filter: saturate(1); }
+
+/* Zone three: ranks four and down, as a ledger. */
+.scorers__ledger { border-top: 1px solid var(--rule-hard); }
+.scorers__row {
+  display: grid;
+  grid-template-columns: 3rem 3.25rem 1fr auto;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  align-items: center;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--rule);
+  transition: background-color 0.35s var(--ease), padding-left 0.4s var(--ease);
+}
+.scorers__row:hover { background: var(--paper-2); padding-left: 0.75rem; }
+.scorers__n {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+.scorers__thumb {
+  width: 3.25rem;
+  aspect-ratio: 3 / 4;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  padding: 2px;
+}
+.scorers__who { display: grid; gap: 0.1rem; }
+.scorers__whoName { font-weight: 600; font-size: 0.9375rem; line-height: 1.25; }
+.scorers__whoMeta {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.scorers__goals {
+  font-family: var(--display);
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--pitch);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Zone four: standing records. */
+.scorers__records {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--rule-hard);
+  border: 1px solid var(--rule-hard);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+.scorers__rec { background: var(--paper); display: grid; align-content: start; }
+.scorers__recMedia {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper-2);
+  aspect-ratio: 4 / 3;
+  padding: 8px;
+  border-bottom: 1px solid var(--rule-hard);
+}
+.scorers__recBody { padding: clamp(1rem, 2vw, 1.5rem); display: grid; gap: 0.3rem; }
+.scorers__recK {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+.scorers__recV {
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  color: var(--pitch);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+.scorers__recP { font-size: 0.8125rem; line-height: 1.55; color: var(--ink-2); margin: 0.25rem 0 0; }
+
+@media (max-width: 1000px) {
+  .scorers__pair { grid-template-columns: 1fr; }
+  .scorers__records { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+  .scorers__first { grid-template-columns: 1fr; }
+  .scorers__firstMedia { aspect-ratio: 4 / 3; border-right: 0; border-bottom: 1px solid var(--rule-hard); }
+  .scorers__row { grid-template-columns: 2.25rem 2.75rem 1fr auto; }
+}
+@media (max-width: 480px) {
+  .scorers__records { grid-template-columns: 1fr; }
+  .scorers__second { grid-template-columns: 7rem 1fr; }
+}
+
+/* --------------------------------------------------------------------------
+   17. ARCHIVE. Filter, index, empty state.
+   -------------------------------------------------------------------------- */
+.filter { margin-bottom: clamp(2rem, 4vw, 3rem); max-width: 40rem; }
+.filter__label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin-bottom: 0.5rem;
+}
+.filter__row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.filter__input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--rule-hard);
+  padding: 0.65rem 0.9rem;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--ink);
+  transition: border-color 0.3s var(--ease);
+}
+.filter__input::placeholder { color: var(--ink-3); opacity: 1; }
+.filter__input:focus-visible { border-color: var(--pitch); }
+.filter__help, .filter__count, .filter__err {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  margin: 0.5rem 0 0;
+}
+.filter__help { color: var(--ink-2); }
+.filter__count { color: var(--ink-2); }
+.filter__err { color: var(--alert); font-weight: 500; }   /* rupture rule: error state */
+
+.index { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule-hard); }
+.index__row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 8rem;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--rule);
+  transition: background-color 0.3s var(--ease), padding-left 0.4s var(--ease);
+}
+.index__row:hover { background: var(--paper-2); padding-left: 0.75rem; }
+.index__row[hidden] { display: none; }
+.index__y {
+  font-family: var(--display);
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+  color: var(--pitch);
+  font-variant-numeric: tabular-nums;
+}
+.index__t { font-size: 0.9375rem; line-height: 1.5; }
+.index__g {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: right;
+}
+
+.empty {
+  border: 1px dashed var(--rule-hard);
+  padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1.5rem, 4vw, 3rem);
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  margin-top: 1px;
+}
+.empty[hidden] { display: none; }
+.empty__mark { font-family: var(--mono); font-size: 1.5rem; color: var(--pitch); margin: 0; letter-spacing: 0.1em; }
+.empty__h {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.15rem, 2.5vw, 1.75rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.empty__p { font-size: 0.9375rem; color: var(--ink-2); max-width: 52ch; margin: 0 0 0.75rem; }
+
+/* --------------------------------------------------------------------------
+   18. FOOTER
+   -------------------------------------------------------------------------- */
+.foot { border-top: 1px solid var(--rule-hard); padding-block: clamp(3rem, 7vw, 5.5rem) 2.5rem; }
+.foot__grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.7fr 0.7fr 1.6fr;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  align-items: start;
+}
+.foot__brand .nav__mark { margin-bottom: 0.9rem; }
+.foot__word {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 0.6rem;
+}
+.foot__sub { font-size: 0.8125rem; line-height: 1.55; color: var(--ink-2); max-width: 34ch; }
+.foot__col { display: grid; align-content: start; gap: 0.55rem; }
+.foot__k {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 0.3rem;
+}
+.foot__col a {
+  font-size: 0.875rem;
+  text-decoration: none;
+  color: var(--ink-2);
+  width: fit-content;
+  transition: color 0.3s var(--ease);
+}
+.foot__col a:hover { color: var(--pitch); }
+.foot__credit { font-size: 0.75rem; line-height: 1.6; color: var(--ink-3); }
+.foot__out {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink) !important;
+  text-decoration: none;
+  border-bottom: 1px solid var(--pitch);
+  padding-bottom: 2px;
+  width: fit-content;
+}
+.foot__base {
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+
+/* --------------------------------------------------------------------------
+   19. SCROLL REVEAL. IntersectionObserver adds .is-in.
+   -------------------------------------------------------------------------- */
+/* Opacity and transform only. The earlier version also animated a 6px blur,
+   which is a per-frame raster operation on every revealing element and made
+   scrolling stutter once there were enough of them on the page. */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  transition:
+    opacity 0.7s var(--ease2) calc(var(--i, 0) * 60ms),
+    transform 0.7s var(--ease2) calc(var(--i, 0) * 60ms);
+}
+.reveal.is-in { opacity: 1; transform: none; }
+/* The no-script fallback lives in a <noscript> block in the document head. */
+
+/* --------------------------------------------------------------------------
+   20. RESPONSIVE COLLAPSE. Every multi column layout declares its fallback.
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .trophy__text { grid-column: 1 / span 12; }
+  .trophy__a { grid-column: 1 / span 6; }
+  .trophy__b { grid-column: 7 / span 6; margin-top: 0; }
+  .foot__grid { grid-template-columns: 1fr 1fr; }
+  .foot__col--wide { grid-column: 1 / -1; }
+}
+
+@media (max-width: 900px) {
+  .origins__split { grid-template-columns: 1fr; }
+  .origins__numeral { position: static; opacity: 0.14; margin-bottom: 1rem; }
+  .founders { grid-template-columns: repeat(2, 1fr); }
+  .women__cols { grid-template-columns: 1fr; }
+  .bento__cell--a,
+  .bento__cell--b,
+  .bento__cell--c,
+  .bento__cell--d,
+  .bento__cell--e { grid-column: 1 / -1; }
+}
+
+@media (max-width: 768px) {
+  :root { --nav-h: 56px; }
+  .hero__body { padding-top: 4rem; }
+  .trophy__a, .trophy__b { grid-column: 1 / span 12; }
+  .stack__inner { grid-template-columns: 1fr; }
+  .stack__media { grid-column: 1; grid-row: auto; min-height: 14rem; border-left: 0; border-top: 1px solid var(--rule-hard); }
+  .stack__card { position: static; }
+  .index__row { grid-template-columns: 4rem 1fr; }
+  .index__g { grid-column: 2; text-align: left; }
+  .foot__grid { grid-template-columns: 1fr; }
+  .band__set { gap: 1.5rem; padding-right: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .founders { grid-template-columns: 1fr; }
+  .bento__row { gap: 1.5rem; }
+}
+
+/* --------------------------------------------------------------------------
+   21. REDUCED MOTION. Everything above collapses to static.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal { opacity: 1; transform: none; filter: none; }
+  .band__track { animation: none; transform: none; }
+  .skeleton::after { animation: none; }
+  .progress__bar { transform: scaleX(0); }
+  .pan { height: auto; }
+  .pan__stage { position: static; height: auto; overflow: visible; }
+  .pan__track { transform: none; overflow-x: auto; }
+  .stack__card { position: static; transform: none; opacity: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   22. PRINT
+   -------------------------------------------------------------------------- */
+@media print {
+  .nav, .menu, .progress, .grain, .band, .filter, .btn { display: none !important; }
+  body { background: #fff; color: #000; }
+  .reveal { opacity: 1; transform: none; filter: none; }
+  .pan { height: auto; }
+  .pan__stage { position: static; height: auto; }
+  .pan__track { flex-wrap: wrap; }
+  .stack__card { position: static; }
+}

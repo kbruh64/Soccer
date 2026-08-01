@@ -1,0 +1,364 @@
+/* ==========================================================================
+   TIMELINE. Twenty three tournaments, 1930 to 2026.
+   Extends main.css. Introduces no new tokens, no radius, no third colour.
+   Canvas is forced to pure white here, as briefed.
+   Green spine is the record. Red appears once, on the years that were
+   cancelled, which is the rupture rule holding.
+   ========================================================================== */
+
+.tl-page { background: #FFFFFF; }
+@media (prefers-color-scheme: dark) {
+  .tl-page { background: var(--paper); }
+}
+
+/* --------------------------------------------------------------------------
+   Masthead
+   -------------------------------------------------------------------------- */
+.tl-head { padding-block: clamp(3.5rem, 8vw, 6.5rem) clamp(2.5rem, 5vw, 4rem); }
+.tl-head__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  text-decoration: none;
+  margin-bottom: 2.5rem;
+  transition: color 0.35s var(--ease);
+}
+.tl-head__back:hover { color: var(--pitch); }
+
+.tl-head__h {
+  font-family: var(--display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(2.25rem, 7vw, 5.5rem);
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+  margin: 0 0 1.5rem;
+  max-width: 18ch;
+}
+.tl-head__lede { font-size: clamp(1rem, 1.4vw, 1.1875rem); line-height: 1.55; max-width: 58ch; color: var(--ink-2); }
+.tl-head__note {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  max-width: 62ch;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+
+/* Key strip. Uses both accents once, to declare the rule up front. */
+.tl-key { display: flex; gap: 2rem; flex-wrap: wrap; margin-top: 2rem; }
+.tl-key__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.tl-key__swatch { width: 12px; height: 12px; flex: none; }
+.tl-key__swatch--green { background: var(--pitch); }
+.tl-key__swatch--red { background: var(--alert); }
+
+/* --------------------------------------------------------------------------
+   The spine
+   -------------------------------------------------------------------------- */
+.tl {
+  position: relative;
+  padding-bottom: var(--sec);
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-inline: var(--gut);
+}
+
+.tl__spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--rule);
+  pointer-events: none;
+}
+.tl__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--pitch);
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+}
+
+/* The spine draws itself as the reader descends. Motivated: it is the only
+   honest progress indicator on a page whose whole subject is elapsed time. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .tl { view-timeline: --tlTL block; }
+    .tl__fill {
+      animation: spine-draw linear both;
+      animation-timeline: --tlTL;
+      animation-range: cover 0% cover 100%;
+    }
+    @keyframes spine-draw { to { transform: scaleY(1); } }
+  }
+}
+/* Without timeline support the spine is simply drawn in full. */
+@supports not (animation-timeline: view()) {
+  .tl__fill { transform: scaleY(1); opacity: 0.28; }
+}
+
+/* --------------------------------------------------------------------------
+   Entries
+   -------------------------------------------------------------------------- */
+/* content-visibility lets the browser skip layout and paint for the entries
+   that are nowhere near the viewport. With 24 of them on one page that is the
+   difference between a smooth scroll and a stuttering one. The intrinsic size
+   keeps the scrollbar stable while they are skipped. */
+.tl__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 5rem 1fr;
+  align-items: center;
+  margin-bottom: clamp(3rem, 6vw, 5.5rem);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+.tl__item:last-child { margin-bottom: 0; }
+
+.tl__node {
+  grid-column: 2;
+  justify-self: center;
+  width: 15px;
+  height: 15px;
+  background: var(--paper);
+  border: 3px solid var(--pitch);
+  z-index: var(--z-base);
+}
+.tl__item--now .tl__node { background: var(--pitch); width: 21px; height: 21px; }
+
+.tl__card { grid-column: 1; grid-row: 1; }
+.tl__item:nth-of-type(even) .tl__card { grid-column: 3; }
+
+.tl__inner {
+  border: 1px solid var(--rule-hard);
+  background: var(--paper);
+  display: grid;
+  grid-template-columns: 40% 1fr;
+  align-items: stretch;
+  overflow: hidden;
+  transition: transform 0.6s var(--ease);
+}
+.tl__inner:hover { transform: translateY(-3px); }
+
+/* Photograph, presented as a plate on a mount.
+
+   These 23 portraits come from 23 different sources and their aspect ratios
+   run from tall studio portraits to wide press shots. A single cover crop was
+   cutting heads and shoulders off whichever ones did not happen to match the
+   frame. object-fit: contain guarantees every photograph is shown whole, and
+   the tinted mount around it reads as an archive plate rather than as an
+   accident. The frame stays a fixed 4:5 so every tournament carries the same
+   weight down the page. */
+.tl__media {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper-2);
+  border-right: 1px solid var(--rule-hard);
+  aspect-ratio: 4 / 5;
+  padding: 10px;
+}
+.tl__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 50%;
+  /* Light desaturation only. The archive moves from monochrome to colour on
+     its own as the decades pass, and that shift is the point. */
+  filter: saturate(0.85) contrast(1.03);
+  transition: transform 0.9s var(--ease), filter 0.5s var(--ease);
+}
+.tl__inner:hover .tl__media img { transform: scale(1.04); filter: saturate(1) contrast(1); }
+
+.tl__body {
+  padding: clamp(1.1rem, 2vw, 1.6rem);
+  display: grid;
+  align-content: start;
+  gap: 0.3rem;
+}
+
+.tl__year {
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+  color: var(--pitch);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+.tl__host {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 0.7rem;
+}
+.tl__winner {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(0.95rem, 1.6vw, 1.2rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.tl__score {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  margin: 0 0 0.9rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--rule);
+}
+/* Golden Boot line. Sits between the result and the featured player, with an
+   inline label so it reads without a heading of its own. */
+.tl__boot {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  margin: 0 0 0.9rem;
+}
+.tl__boot span {
+  display: block;
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 0.15rem;
+}
+
+.tl__player {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 0.35rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--rule);
+}
+.tl__note { font-size: 0.8125rem; line-height: 1.55; color: var(--ink-2); margin: 0; }
+
+/* --------------------------------------------------------------------------
+   The cancelled years. The one red moment on this page.
+   -------------------------------------------------------------------------- */
+.tl__item--void .tl__node { border-color: var(--alert); background: var(--alert); }
+.tl__void {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: center;
+  text-align: center;
+  border: 1px dashed var(--alert);
+  padding: 1.25rem 2rem;
+  background: var(--paper);
+  max-width: 34rem;
+  z-index: var(--z-base);
+}
+.tl__void h2 {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--alert);
+  margin: 0 0 0.5rem;
+}
+.tl__void p {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Closing panel
+   -------------------------------------------------------------------------- */
+.tl-end { border-top: 1px solid var(--rule-hard); padding-block: var(--sec); }
+.tl-end__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--rule-hard);
+  border: 1px solid var(--rule-hard);
+  margin-top: 2.5rem;
+}
+.tl-end__cell { background: var(--paper); padding: clamp(1.25rem, 2.5vw, 2rem); display: grid; gap: 0.35rem; align-content: start; }
+.tl-end__k {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+.tl-end__v {
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--pitch);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+.tl-end__s { font-size: 0.8125rem; line-height: 1.5; color: var(--ink-2); margin: 0; }
+
+/* --------------------------------------------------------------------------
+   Collapse. Spine moves to the left edge, every card sits to its right.
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .tl { padding-left: calc(var(--gut) + 1.75rem); }
+  .tl__spine { left: var(--gut); margin-left: 0; }
+  .tl__item { grid-template-columns: 1fr; margin-bottom: 2.5rem; }
+  .tl__node {
+    grid-column: 1;
+    grid-row: 1;
+    position: absolute;
+    left: calc(var(--gut) - 1.75rem - 6px);
+    top: 1.75rem;
+    justify-self: start;
+  }
+  .tl__card,
+  .tl__item:nth-of-type(even) .tl__card { grid-column: 1; }
+  .tl__void { max-width: none; text-align: left; }
+  .tl-end__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .tl__inner { grid-template-columns: 1fr; }
+  .tl__media { aspect-ratio: 4 / 3; border-right: 0; border-bottom: 1px solid var(--rule-hard); }
+  .tl-end__grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl__fill { transform: scaleY(1); opacity: 0.28; }
+  .tl__inner:hover { transform: none; }
+}
+
+@media print {
+  .tl__spine { display: none; }
+  .tl__item { grid-template-columns: 1fr; page-break-inside: avoid; }
+}

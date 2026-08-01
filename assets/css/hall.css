@@ -1,0 +1,150 @@
+/* ==========================================================================
+   HALL OF FAME. Extends main.css.
+
+   Introduces exactly one new layout family, .hof, for the inductee plates.
+   Everything else on the page reuses families already defined in main.css
+   (.lattice, .rail, .slab, .scorers__records), because a second page gets a
+   fresh budget and duplicating those primitives would be waste.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Masthead
+   -------------------------------------------------------------------------- */
+.hof-head { padding-block: clamp(3.5rem, 8vw, 6.5rem) clamp(2rem, 4vw, 3.5rem); }
+.hof-head__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  text-decoration: none;
+  margin-bottom: 2.5rem;
+  transition: color 0.35s var(--ease);
+}
+.hof-head__back:hover { color: var(--pitch); }
+.hof-head__h {
+  font-family: var(--display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(2.25rem, 7vw, 5.5rem);
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+  margin: 0 0 1.5rem;
+  max-width: 18ch;
+}
+.hof-head__lede { font-size: clamp(1rem, 1.4vw, 1.1875rem); line-height: 1.55; max-width: 60ch; color: var(--ink-2); }
+
+/* The disclaimer is load bearing, not decoration. FIFA does not operate a
+   hall of fame, so this page must never be mistaken for one that it does. */
+.hof-note {
+  border-left: 3px solid var(--alert);
+  padding: 0.25rem 0 0.25rem 1.25rem;
+  margin-top: 2rem;
+  max-width: 62ch;
+}
+.hof-note p {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+.hof-note b { color: var(--ink); }
+
+/* --------------------------------------------------------------------------
+   .hof, the inductee plates. Twelve column grid, deliberately uneven spans
+   so the six do not read as a card row.
+   -------------------------------------------------------------------------- */
+.hof {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1px;
+  background: var(--rule-hard);
+  border: 1px solid var(--rule-hard);
+}
+.hof__cell {
+  background: var(--paper);
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+.hof__cell:nth-child(1) { grid-column: span 7; }
+.hof__cell:nth-child(2) { grid-column: span 5; }
+.hof__cell:nth-child(3) { grid-column: span 5; }
+.hof__cell:nth-child(4) { grid-column: span 7; }
+.hof__cell:nth-child(5) { grid-column: span 6; }
+.hof__cell:nth-child(6) { grid-column: span 6; }
+
+.hof__media {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--rule-hard);
+  aspect-ratio: 16 / 10;
+  padding: 12px;
+}
+.hof__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: saturate(0.85) contrast(1.03);
+  transition: transform 0.9s var(--ease), filter 0.5s var(--ease);
+}
+.hof__cell:hover .hof__media img { transform: scale(1.03); filter: saturate(1); }
+
+.hof__body { padding: clamp(1.25rem, 2.5vw, 2rem); display: grid; align-content: start; gap: 0.35rem; }
+.hof__no {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pitch);
+  margin: 0;
+}
+.hof__name {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(1.35rem, 2.8vw, 2.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.hof__meta {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 0.6rem;
+}
+.hof__cite { font-size: 0.9375rem; line-height: 1.6; color: var(--ink-2); margin: 0; max-width: 56ch; }
+
+/* Small caps label introducing each wing of the hall. */
+.hof-wing { padding-block: var(--sec) 0; }
+.hof-wing__h {
+  font-family: var(--display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(1.75rem, 4.5vw, 3.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+  margin: 0 0 1rem;
+  max-width: 22ch;
+}
+.hof-wing__p { font-size: 0.9375rem; line-height: 1.65; color: var(--ink-2); max-width: 60ch; margin: 0 0 clamp(2rem, 4vw, 3rem); }
+
+@media (max-width: 900px) {
+  .hof__cell:nth-child(1),
+  .hof__cell:nth-child(2),
+  .hof__cell:nth-child(3),
+  .hof__cell:nth-child(4),
+  .hof__cell:nth-child(5),
+  .hof__cell:nth-child(6) { grid-column: 1 / -1; }
+  .hof__media { aspect-ratio: 3 / 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hof__cell:hover .hof__media img { transform: none; }
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not in the record | The Charter Records</title>
+<meta name="description" content="That page is not part of this archive.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/css/main.css">
+<style>
+  .lost {
+    min-height: 100dvh;
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 1.25rem;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding: 0 var(--gut);
+  }
+  .lost__code {
+    font-family: var(--display);
+    font-size: clamp(6rem, 26vw, 20rem);
+    line-height: 0.75;
+    letter-spacing: -0.06em;
+    color: var(--hazard);
+    margin: 0;
+  }
+  .lost__h {
+    font-family: var(--display);
+    text-transform: uppercase;
+    font-size: clamp(1.5rem, 4vw, 3rem);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    margin: 0;
+  }
+  .lost__p { color: var(--ink-2); max-width: 48ch; margin: 0 0 1rem; }
+  .lost__links { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<main class="lost">
+  <p class="lost__code">404</p>
+  <h1 class="lost__h">Not in the record</h1>
+  <p class="lost__p">This archive covers FIFA from the founding charter of 21 May 1904 to the 2026 finals. Whatever you were looking for is not filed under that address.</p>
+  <div class="lost__links">
+    <a class="btn btn--primary" href="index.html">
+      <span class="btn__label">Back to 1904</span>
+      <span class="btn__icon" aria-hidden="true">&#8599;</span>
+    </a>
+    <a class="btn btn--ghost" href="index.html#archive">
+      <span class="btn__label">Search the index</span>
+    </a>
+  </div>
+</main>
+</body>
+</html>
